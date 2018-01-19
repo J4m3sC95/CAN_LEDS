@@ -74,7 +74,7 @@ namespace CAN_LED_PC_Interface
 
         private void ComPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string incoming_data = ComPort.ReadLine();
+            string incoming_data = ComPort.ReadExisting();
             this.BeginInvoke(new SerialInputCallback(SerialInput), new object[] { incoming_data });
         }
 
