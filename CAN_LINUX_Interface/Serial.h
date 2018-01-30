@@ -17,6 +17,8 @@
 int fd;
 struct termios oldtio,newtio;
 
+char buf[255];
+int res;
 
 void serial_setup();
 char serRead(void *buf, size_t count);

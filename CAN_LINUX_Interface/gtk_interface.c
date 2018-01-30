@@ -1,4 +1,4 @@
-#include "gtk.h"
+#include "gtk_interface.h"
 #include "Serial.h"
 
 GdkPixbuf *create_pixbuf(const gchar * filename) {

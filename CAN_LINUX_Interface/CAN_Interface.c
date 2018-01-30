@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "Serial.h"
-#include "gtk.h"
+#include "gtk_interface.h"
 
 char buf[255];
 int res;
