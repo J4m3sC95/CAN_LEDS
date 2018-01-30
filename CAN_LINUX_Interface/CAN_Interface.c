@@ -28,7 +28,7 @@ void send_bytes(GtkWidget *widget, gpointer window){
 	buf[0] = 'a';
 	buf[1] = 'b';
 	buf[2] = '\n';
-	serWrite(buf, 2);
+	serWrite(buf, 3);
 	res = serRead(buf,255); 
 	buf[res]=0;
 	printf("%s", buf);

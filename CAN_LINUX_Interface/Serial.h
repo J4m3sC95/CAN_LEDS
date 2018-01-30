@@ -19,8 +19,8 @@ struct termios oldtio,newtio;
 
 
 void serial_setup();
-char serRead(int fd, void *buf, size_t count);
-void serWrite(int fd, void *buf, size_t count);
+char serRead(void *buf, size_t count);
+void serWrite(void *buf, size_t count);
 void serial_cleanup();
 
 #endif /* SERIAL_H_ */

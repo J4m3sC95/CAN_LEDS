@@ -309,3 +309,6 @@ __pycache__/
 
 #User Specific Files
 *.atsuo
+
+#Linux executable
+*.exe
