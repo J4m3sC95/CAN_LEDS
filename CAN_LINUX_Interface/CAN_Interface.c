@@ -8,17 +8,14 @@ int res;
 
 volatile int STOP=FALSE; 
 
-
-
 int main(int argc, char *argv[])
 {
-	serial_setup();	
-	
 	gtk_initialise(argc, argv);
 	gtk_build_window();
 	gtk_set_callbacks();	
 	gtk_run();   	
 	
+	/*
 	char data = 'b';
 
 	while (STOP==FALSE) {
@@ -31,6 +28,7 @@ int main(int argc, char *argv[])
 		printf("%s", buf);
 		if (buf[0]=='z') STOP=TRUE;
 	}
+	*/
 	 
 	serial_cleanup();
 	 
