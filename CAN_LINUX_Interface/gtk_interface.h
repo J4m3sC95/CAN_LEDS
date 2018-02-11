@@ -2,6 +2,7 @@
 #define GTK_INTERFACE_H_
 
 #include <gtk/gtk.h>
+#include <string.h>
 
 // Objects
 GtkWidget *window;
@@ -18,6 +19,8 @@ GtkWidget *Arg1ComboBox;
 GtkWidget *Arg1SpinButton;
 GtkWidget *Arg2ComboBox;
 GtkWidget *Arg2SpinButton;
+GtkWidget *Arg1Control;
+GtkWidget *Arg2Control;
 GtkWidget *ledNotebook;
 GtkWidget *ledTabTable[3];
 GtkWidget *ledCheckButton[3][10];
@@ -45,5 +48,6 @@ void gtk_set_callbacks();
 void gtk_run();
 void send_bytes(GtkWidget *widget, gpointer window);
 void SerialConnectCallback(GtkWidget *widget, gpointer window);
+ void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window);
 
 #endif /* GTK_INTERFACE_H_ */

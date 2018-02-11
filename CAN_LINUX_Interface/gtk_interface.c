@@ -1,6 +1,8 @@
 #include "gtk_interface.h"
 #include "Serial.h"
 
+const char *ledCubeCommands[8] = {"LOAD", "ROTATE","MIRROR", "TRANSLATE", "TRANSLATE CLEAR", "LOOP", "DELAY"};
+
 GdkPixbuf *create_pixbuf(const gchar * filename) {
     
    GdkPixbuf *pixbuf;
@@ -21,6 +23,8 @@ void gtk_initialise(int argc, char *argv[]){
 }
 
 void gtk_build_window(){
+	int n,m;
+	
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "CAN Interface");
 	gtk_window_set_default_size(GTK_WINDOW(window), 300,200);
@@ -38,8 +42,8 @@ void gtk_build_window(){
 	ledCubeControlTableLabelVbox = gtk_vbox_new(TRUE,1);
 
 	commandLabel = gtk_label_new("Command");
-	arg1Label = gtk_label_new("Arg1");
-	arg2Label = gtk_label_new("Arg2");
+	arg1Label = gtk_label_new("");
+	arg2Label = gtk_label_new("");
 	
 	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), commandLabel, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), arg1Label, TRUE, TRUE, 0);
@@ -51,20 +55,29 @@ void gtk_build_window(){
 	ledCubeControlTableControlVbox = gtk_vbox_new(TRUE,1);
 	
 	CommandComboBox = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "LOAD");
+	for(n=0; n<7;n++){
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(CommandComboBox), ledCubeCommands[n]);
+	}
+	/*
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "ROTATE");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "MIRROR");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "TRANSLATE");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "TRANSLATE CLEAR");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "LOOP");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "DELAY");
+	*/
 	
+	/*
 	Arg1SpinButton = gtk_spin_button_new_with_range(0,100,1);
 	Arg2SpinButton = gtk_spin_button_new_with_range(0,100,1);
+	* */
+	
+	Arg1Control = gtk_label_new("");
+	Arg2Control = gtk_label_new("");	
 	
 	gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), CommandComboBox, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg1SpinButton, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg2SpinButton, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg1Control, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg2Control, TRUE, TRUE, 0);
 	
 	gtk_table_attach(GTK_TABLE(ledCubeControlTable), ledCubeControlTableControlVbox, 1, 2,0,1, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 6,0) ;
 	
@@ -73,7 +86,6 @@ void gtk_build_window(){
 	LayerLabel[1] = gtk_label_new("Layer1");
 	LayerLabel[2] = gtk_label_new("Layer2");	
 	
-	int n,m;
 	ledNotebook = gtk_notebook_new();
 	for(n = 0; n<3; n++){
 		ledTabTable[n] = gtk_table_new(3,3,FALSE);
@@ -146,6 +158,7 @@ void gtk_build_window(){
 void gtk_set_callbacks(){
 	g_signal_connect(SerialTestButton, "clicked",  G_CALLBACK(send_bytes), NULL);
 	g_signal_connect(SerialConnectButton, "clicked",  G_CALLBACK(SerialConnectCallback), NULL);
+	g_signal_connect(CommandComboBox, "changed", G_CALLBACK(CommandComboBox_changed_callback), NULL);
 }
 
 void gtk_run(){
@@ -167,4 +180,18 @@ void send_bytes(GtkWidget *widget, gpointer window){
  
  void SerialConnectCallback(GtkWidget *widget, gpointer window){
 	 serial_setup();
+ }
+ 
+ void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window){
+	 int n, command_index;
+	 	 
+	 gchar* command_string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(CommandComboBox));
+	 
+	 for(n = 0; n<7; n++){
+		 if(strcmp(command_string, ledCubeCommands[n]) == 0){
+			 command_index = n;
+			 n=10;
+		 }
+	 }
+	 printf("Command Selected = %d\n", command_index);
  }
