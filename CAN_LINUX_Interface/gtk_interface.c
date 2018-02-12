@@ -2,6 +2,9 @@
 #include "Serial.h"
 
 const char *ledCubeCommands[8] = {"LOAD", "ROTATE","MIRROR", "TRANSLATE", "TRANSLATE CLEAR", "LOOP", "DELAY"};
+const char *ledCubeAxisArgs[4] = {"X-Axis", "Y-Axis", "Z-Axis"};
+const char *ledCubeDirectionArgs[3] = {"Positive", "Negative"};
+const char *ledCubePlaneArgs[4] = {"YZ Plane", "ZX Plane", "XY Plane"};
 
 GdkPixbuf *create_pixbuf(const gchar * filename) {
     
@@ -35,19 +38,27 @@ void gtk_build_window(){
 	
 	// LED Cube notebook tab
 	// four column table
-	ledCubeControlTable = gtk_table_new(1,4,TRUE);
+	ledCubeControlTable = gtk_table_new(1,4,FALSE);
 	gtk_container_set_border_width(GTK_CONTAINER(ledCubeControlTable), 6);
 	// vbox for labels and buttons in columns 1, 2 and 4
 	//column 1 labels
 	ledCubeControlTableLabelVbox = gtk_vbox_new(TRUE,1);
 
-	commandLabel = gtk_label_new("Command");
+	commandLabel = gtk_label_new("      Command");
 	arg1Label = gtk_label_new("");
 	arg2Label = gtk_label_new("");
 	
-	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), commandLabel, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), arg1Label, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), arg2Label, TRUE, TRUE, 0);
+	commandLabelHalign = gtk_alignment_new(1,0,0,0);
+	arg1LabelHalign = gtk_alignment_new(1,0,0,0);
+	arg2LabelHalign = gtk_alignment_new(1,0,0,0);
+	
+	gtk_container_add(GTK_CONTAINER(commandLabelHalign), commandLabel);
+	gtk_container_add(GTK_CONTAINER(arg1LabelHalign), arg1Label);
+	gtk_container_add(GTK_CONTAINER(arg2LabelHalign), arg2Label);
+	
+	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), commandLabelHalign, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), arg1LabelHalign, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(ledCubeControlTableLabelVbox), arg2LabelHalign, TRUE, TRUE, 0);
 	
 	gtk_table_attach(GTK_TABLE(ledCubeControlTable), ledCubeControlTableLabelVbox, 0, 1,0,1, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 6,0) ;
 	
@@ -56,21 +67,8 @@ void gtk_build_window(){
 	
 	CommandComboBox = gtk_combo_box_new_text();
 	for(n=0; n<7;n++){
-		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(CommandComboBox), ledCubeCommands[n]);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), ledCubeCommands[n]);
 	}
-	/*
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "ROTATE");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "MIRROR");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "TRANSLATE");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "TRANSLATE CLEAR");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "LOOP");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), "DELAY");
-	*/
-	
-	/*
-	Arg1SpinButton = gtk_spin_button_new_with_range(0,100,1);
-	Arg2SpinButton = gtk_spin_button_new_with_range(0,100,1);
-	* */
 	
 	Arg1Control = gtk_label_new("");
 	Arg2Control = gtk_label_new("");	
@@ -185,7 +183,7 @@ void send_bytes(GtkWidget *widget, gpointer window){
  void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window){
 	 int n, command_index;
 	 	 
-	 gchar* command_string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(CommandComboBox));
+	 gchar* command_string = gtk_combo_box_get_active_text(GTK_COMBO_BOX(CommandComboBox));
 	 
 	 for(n = 0; n<7; n++){
 		 if(strcmp(command_string, ledCubeCommands[n]) == 0){
@@ -193,5 +191,73 @@ void send_bytes(GtkWidget *widget, gpointer window){
 			 n=10;
 		 }
 	 }
-	 printf("Command Selected = %d\n", command_index);
+	 printf("Command Selected = %d: %s\n", command_index, ledCubeCommands[command_index]);
+	 
+	 gtk_widget_destroy(Arg1Control);
+	 gtk_widget_destroy(Arg2Control);
+	 
+	 switch(command_index){
+		 case LOAD_CMD :
+		 case TRANSLATE_CLEAR_CMD:
+		 {
+			 gtk_label_set_text(GTK_LABEL(arg1Label),"");
+			 gtk_label_set_text(GTK_LABEL(arg2Label),"");			
+			 Arg1Control = gtk_label_new("");
+			 Arg2Control = gtk_label_new("");
+		 }
+		 break;
+		 case ROTATE_CMD:
+		 case TRANSLATE_CMD:
+		 {
+			 gtk_label_set_text(GTK_LABEL(arg1Label),"Axis");
+			 gtk_label_set_text(GTK_LABEL(arg2Label),"Direction");
+			 Arg1Control = gtk_combo_box_new_text();
+			 for(n = 0; n<3; n++){
+				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg1Control), ledCubeAxisArgs[n]);
+			 }
+			 Arg2Control = gtk_combo_box_new_text();
+			 for(n = 0; n<2; n++){
+				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg2Control), ledCubeDirectionArgs[n]);
+			 }			 
+		 }
+		 break;
+		 case MIRROR_CMD:
+		 {
+			 gtk_label_set_text(GTK_LABEL(arg1Label),"Plane");
+			 gtk_label_set_text(GTK_LABEL(arg2Label),"");
+			 Arg1Control = gtk_combo_box_new_text();
+			 for(n = 0; n<3; n++){
+				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg1Control), ledCubePlaneArgs[n]);
+			 }
+			 Arg2Control = gtk_label_new("");
+		 }
+		 break;
+		 case (LOOP_CMD - 4):
+		 {
+			 gtk_label_set_text(GTK_LABEL(arg1Label),"Instructions");
+			 gtk_label_set_text(GTK_LABEL(arg2Label),"Loops");
+			 Arg1Control = gtk_spin_button_new_with_range(0,100,1);
+			 Arg2Control = gtk_spin_button_new_with_range(0,100,1);
+		 }
+		 break;
+		 case (DELAY_CMD - 4):
+		 {
+			 gtk_label_set_text(GTK_LABEL(arg1Label),"Time [ms]");
+			 gtk_label_set_text(GTK_LABEL(arg2Label),"");
+			 Arg1Control = gtk_spin_button_new_with_range(0,100,1);
+			 Arg2Control = gtk_label_new("");
+		 }
+		 break;
+		 default:
+		 {
+			 printf("Shit!!");
+		 }
+	 }
+	 
+	 gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg1Control, TRUE, TRUE, 0);
+	 gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg2Control, TRUE, TRUE, 0);
+	 gtk_widget_show(Arg1Control);
+	 gtk_widget_show(Arg2Control);
+	 
+	 g_free(command_string);
  }

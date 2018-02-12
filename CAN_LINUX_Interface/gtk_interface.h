@@ -4,6 +4,19 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
+// defines for different effect functions
+#define LOAD_CMD					0
+#define ROTATE_CMD					1
+#define MIRROR_CMD					2
+#define TRANSLATE_CMD				3
+#define TRANSLATE_CLEAR_CMD			4
+#define EEPROM_WRITE_BEGIN_CMD		5
+#define EEPROM_WRITE_END_CMD		6
+#define ACTIVATE_CMD				7
+#define DEACTIVATE_CMD				8
+#define LOOP_CMD					9
+#define DELAY_CMD					10
+
 // Objects
 GtkWidget *window;
 GdkPixbuf *icon;
@@ -13,12 +26,11 @@ GtkWidget *ledCubeControlTableLabelVbox;
 GtkWidget *commandLabel;
 GtkWidget *arg1Label;
 GtkWidget *arg2Label;
+GtkWidget *commandLabelHalign;
+GtkWidget *arg1LabelHalign;
+GtkWidget *arg2LabelHalign;
 GtkWidget *ledCubeControlTableControlVbox;
 GtkWidget *CommandComboBox;
-GtkWidget *Arg1ComboBox;
-GtkWidget *Arg1SpinButton;
-GtkWidget *Arg2ComboBox;
-GtkWidget *Arg2SpinButton;
 GtkWidget *Arg1Control;
 GtkWidget *Arg2Control;
 GtkWidget *ledNotebook;
