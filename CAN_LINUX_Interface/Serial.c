@@ -25,6 +25,8 @@ void serial_setup(){
 	// now clean the modem line and activate the settings for the port
 	 tcflush(fd, TCIFLUSH);
 	 tcsetattr(fd,TCSANOW,&newtio);
+	 
+	 serial_connected = true;
  }
  
  char serRead(void *buf, size_t count){
@@ -38,4 +40,21 @@ void serial_setup(){
  void serial_cleanup(){
 	// restore the old port settings
 	tcsetattr(fd,TCSANOW,&oldtio);
+	serial_connected = false;
  }
+ 
+ void serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *led_buf){
+	 //build and send command
+	 buf_size = sprintf(buf, "<%d,%d,%d,%d,%d,%d>", cmd, arg1, arg2, led_buf[0], led_buf[1], led_buf[2]);
+	 
+	 // send command
+	 printf("Sending command: %s\n", buf);
+	 
+	 if(serial_connected){
+		 serWrite(buf, buf_size);
+		 // wait for the confirmation from device and display on UI
+	 }
+	 else{
+		printf("Serial port not open!\n");
+	}
+}

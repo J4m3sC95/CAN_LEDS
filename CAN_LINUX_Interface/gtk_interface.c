@@ -1,10 +1,11 @@
 #include "gtk_interface.h"
-#include "Serial.h"
 
 const char *ledCubeCommands[8] = {"LOAD", "ROTATE","MIRROR", "TRANSLATE", "TRANSLATE CLEAR", "LOOP", "DELAY"};
 const char *ledCubeAxisArgs[4] = {"X-Axis", "Y-Axis", "Z-Axis"};
 const char *ledCubeDirectionArgs[3] = {"Positive", "Negative"};
 const char *ledCubePlaneArgs[4] = {"YZ Plane", "ZX Plane", "XY Plane"};
+
+uint16_t blank_buffer[] = {0,0,0};
 
 GdkPixbuf *create_pixbuf(const gchar * filename) {
     
@@ -69,6 +70,7 @@ void gtk_build_window(){
 	for(n=0; n<7;n++){
 		gtk_combo_box_append_text(GTK_COMBO_BOX(CommandComboBox), ledCubeCommands[n]);
 	}
+	gtk_combo_box_set_active(GTK_COMBO_BOX(CommandComboBox), 0);
 	
 	Arg1Control = gtk_label_new("");
 	Arg2Control = gtk_label_new("");	
@@ -153,12 +155,6 @@ void gtk_build_window(){
 	gtk_container_add(GTK_CONTAINER(window),WindowLayoutTable);
 }
 
-void gtk_set_callbacks(){
-	g_signal_connect(SerialTestButton, "clicked",  G_CALLBACK(send_bytes), NULL);
-	g_signal_connect(SerialConnectButton, "clicked",  G_CALLBACK(SerialConnectCallback), NULL);
-	g_signal_connect(CommandComboBox, "changed", G_CALLBACK(CommandComboBox_changed_callback), NULL);
-}
-
 void gtk_run(){
 	gtk_widget_show_all(window);  
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);  
@@ -166,31 +162,46 @@ void gtk_run(){
 	g_object_unref(icon); 
 }
 
-void send_bytes(GtkWidget *widget, gpointer window){
-	buf[0] = 'a';
-	buf[1] = 'b';
-	buf[2] = '\n';
-	serWrite(buf, 3);
-	res = serRead(buf,255); 
-	buf[res]=0;
-	printf("%s", buf);
+void gtk_set_callbacks(){
+	g_signal_connect(SerialConnectButton, "clicked",  G_CALLBACK(SerialConnectCallback), NULL);
+	g_signal_connect(CommandComboBox, "changed", G_CALLBACK(CommandComboBox_changed_callback), NULL);
+	g_signal_connect(ActivateButton, "clicked", G_CALLBACK(ActivateButton_clicked_callback), NULL);
+	g_signal_connect(StartWriteButton, "clicked", G_CALLBACK(StartWriteButton_clicked_callback), NULL);
+	g_signal_connect(SendButton, "clicked", G_CALLBACK(SendButton_clicked_callback), NULL);
+	g_signal_connect(SerialTestButton, "clicked", G_CALLBACK(SerialTestButton_clicked_callback), NULL);
+}
+
+void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
+	if(serial_connected){
+		buf[0] = 'a';
+		buf[1] = 'b';
+		buf[2] = '\n';
+		serWrite(buf, 3);
+		res = serRead(buf,255); 
+		buf[res]=0;
+		printf("%s", buf);
+	}
+	else{
+		printf("Serial port not open!\n");
+	}		
  }
  
  void SerialConnectCallback(GtkWidget *widget, gpointer window){
-	 serial_setup();
+	 if(!serial_connected){
+		 serial_setup();
+		 gtk_label_set_text(GTK_LABEL(SerialStatusLabel), "Connected");
+	 }
+	 else
+	 {
+		 serial_cleanup();
+		 gtk_label_set_text(GTK_LABEL(SerialStatusLabel), "Disconnected");
+	 }	 
  }
  
  void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window){
-	 int n, command_index;
-	 	 
-	 gchar* command_string = gtk_combo_box_get_active_text(GTK_COMBO_BOX(CommandComboBox));
+	 int n;
 	 
-	 for(n = 0; n<7; n++){
-		 if(strcmp(command_string, ledCubeCommands[n]) == 0){
-			 command_index = n;
-			 n=10;
-		 }
-	 }
+	 gint command_index = gtk_combo_box_get_active(GTK_COMBO_BOX(CommandComboBox));	 
 	 printf("Command Selected = %d: %s\n", command_index, ledCubeCommands[command_index]);
 	 
 	 gtk_widget_destroy(Arg1Control);
@@ -215,10 +226,12 @@ void send_bytes(GtkWidget *widget, gpointer window){
 			 for(n = 0; n<3; n++){
 				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg1Control), ledCubeAxisArgs[n]);
 			 }
+			 gtk_combo_box_set_active(GTK_COMBO_BOX(Arg1Control), 0);
 			 Arg2Control = gtk_combo_box_new_text();
 			 for(n = 0; n<2; n++){
 				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg2Control), ledCubeDirectionArgs[n]);
-			 }			 
+			 }
+			 gtk_combo_box_set_active(GTK_COMBO_BOX(Arg2Control), 0);			 
 		 }
 		 break;
 		 case MIRROR_CMD:
@@ -229,6 +242,7 @@ void send_bytes(GtkWidget *widget, gpointer window){
 			 for(n = 0; n<3; n++){
 				 gtk_combo_box_append_text(GTK_COMBO_BOX(Arg1Control), ledCubePlaneArgs[n]);
 			 }
+			 gtk_combo_box_set_active(GTK_COMBO_BOX(Arg1Control), 0);
 			 Arg2Control = gtk_label_new("");
 		 }
 		 break;
@@ -236,28 +250,99 @@ void send_bytes(GtkWidget *widget, gpointer window){
 		 {
 			 gtk_label_set_text(GTK_LABEL(arg1Label),"Instructions");
 			 gtk_label_set_text(GTK_LABEL(arg2Label),"Loops");
-			 Arg1Control = gtk_spin_button_new_with_range(0,100,1);
-			 Arg2Control = gtk_spin_button_new_with_range(0,100,1);
+			 Arg1Control = gtk_spin_button_new_with_range(0,255,1);
+			 Arg2Control = gtk_spin_button_new_with_range(0,255,1);
 		 }
 		 break;
 		 case (DELAY_CMD - 4):
 		 {
 			 gtk_label_set_text(GTK_LABEL(arg1Label),"Time [ms]");
 			 gtk_label_set_text(GTK_LABEL(arg2Label),"");
-			 Arg1Control = gtk_spin_button_new_with_range(0,100,1);
+			 Arg1Control = gtk_spin_button_new_with_range(0,255,1);
 			 Arg2Control = gtk_label_new("");
 		 }
 		 break;
-		 default:
-		 {
-			 printf("Shit!!");
-		 }
 	 }
 	 
 	 gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg1Control, TRUE, TRUE, 0);
 	 gtk_box_pack_start(GTK_BOX(ledCubeControlTableControlVbox), Arg2Control, TRUE, TRUE, 0);
 	 gtk_widget_show(Arg1Control);
-	 gtk_widget_show(Arg2Control);
-	 
-	 g_free(command_string);
+	 gtk_widget_show(Arg2Control);	 
  }
+
+void ActivateButton_clicked_callback(GtkWidget *widget, gpointer window){
+	uint8_t command;
+	const gchar *button_label = gtk_button_get_label(GTK_BUTTON(ActivateButton));
+	printf("%s\n", button_label);
+	if(strcmp(button_label, "Activate") == 0){
+		gtk_button_set_label(GTK_BUTTON(ActivateButton), "Deactivate");
+		command = ACTIVATE_CMD;
+	}
+	else{
+		gtk_button_set_label(GTK_BUTTON(ActivateButton), "Activate");
+		command = DEACTIVATE_CMD;
+	}
+	
+	serWriteCommand(command, 0,0,blank_buffer);
+}
+
+void StartWriteButton_clicked_callback(GtkWidget *widget, gpointer window){	
+	uint8_t command;
+	const gchar *button_label = gtk_button_get_label(GTK_BUTTON(StartWriteButton));
+	printf("%s\n", button_label);
+	if(strcmp(button_label, "Start Write") == 0){
+		gtk_button_set_label(GTK_BUTTON(StartWriteButton), "Stop Write");
+		command = EEPROM_WRITE_BEGIN_CMD;
+	}
+	else{
+		gtk_button_set_label(GTK_BUTTON(StartWriteButton), "Start Write");
+		command = EEPROM_WRITE_END_CMD;
+	}
+	
+	serWriteCommand(command, 0,0,blank_buffer);
+}
+
+void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
+	int n, m;
+	uint8_t command_index = 0;
+	uint8_t arg1 = 0;
+	uint8_t arg2 = 0;
+	uint16_t cube_buffer[] = {0,0,0};
+	
+	// get the led number data
+	for(n = 0; n<3; n++){
+		for(m = 0; m< 9; m++){
+			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(ledCheckButton[n][m]))){
+				cube_buffer[n] |= (1<<m);
+			}
+		}
+	}
+	
+	// determine which command index is selected
+	command_index = gtk_combo_box_get_active(GTK_COMBO_BOX(CommandComboBox));
+	 
+	 // switch case to get arg1 and arg2
+	 switch(command_index){
+		 case ROTATE_CMD:
+		 case TRANSLATE_CMD:
+		 {
+			 arg2 = gtk_combo_box_get_active(GTK_COMBO_BOX(Arg2Control));
+		 }			 
+		 case MIRROR_CMD:
+		 {
+			 arg1 = gtk_combo_box_get_active(GTK_COMBO_BOX(Arg1Control));
+		 }
+		 break;
+		 case (LOOP_CMD - 4):
+		 {
+			 arg2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg2Control));
+		 }
+		 case (DELAY_CMD - 4):
+		 {
+			 arg1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg1Control));
+		 }
+		 break;
+	 }
+	 
+	 serWriteCommand(command_index, arg1, arg2, cube_buffer);
+}

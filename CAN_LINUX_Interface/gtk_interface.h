@@ -3,6 +3,7 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include "Serial.h"
 
 // defines for different effect functions
 #define LOAD_CMD					0
@@ -34,9 +35,9 @@ GtkWidget *CommandComboBox;
 GtkWidget *Arg1Control;
 GtkWidget *Arg2Control;
 GtkWidget *ledNotebook;
-GtkWidget *ledTabTable[3];
-GtkWidget *ledCheckButton[3][10];
-GtkWidget *LayerLabel[3];
+GtkWidget *ledTabTable[4];
+GtkWidget *ledCheckButton[4][10];
+GtkWidget *LayerLabel[4];
 GtkWidget *ledCubeControlTableButtonVbox;
 GtkWidget *ActivateButton;
 GtkWidget *StartWriteButton;
@@ -51,15 +52,17 @@ GtkWidget *SerialOutputLabelHalign;
 GtkWidget *SerialOutputTextBox;
 GtkWidget *WindowLayoutTable;
 
-
 // function prototypes
 GdkPixbuf *create_pixbuf(const gchar * filename) ;
 void gtk_initialise(int argc, char *argv[]);
 void gtk_build_window();
 void gtk_set_callbacks();
 void gtk_run();
-void send_bytes(GtkWidget *widget, gpointer window);
 void SerialConnectCallback(GtkWidget *widget, gpointer window);
- void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window);
+void CommandComboBox_changed_callback(GtkWidget *widget, gpointer window);
+void ActivateButton_clicked_callback(GtkWidget *widget, gpointer window);
+void StartWriteButton_clicked_callback(GtkWidget *widget, gpointer window);
+void SendButton_clicked_callback(GtkWidget *widget, gpointer window);
+void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window);
 
 #endif /* GTK_INTERFACE_H_ */
