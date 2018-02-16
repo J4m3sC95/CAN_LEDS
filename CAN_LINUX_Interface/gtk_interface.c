@@ -141,7 +141,7 @@ void gtk_build_window(){
 	gtk_container_add(GTK_CONTAINER(SerialOutputLabelHalign), SerialOutputLabel);
 	
 	// Serial Output Text Box	
-	SerialOutputTextBox = gtk_text_view_new();
+	SerialOutputTextBox = gtk_entry_new();
 	
 	// Overall Window Layout Table	
 	WindowLayoutTable = gtk_table_new(4,1,FALSE);
@@ -283,7 +283,9 @@ void ActivateButton_clicked_callback(GtkWidget *widget, gpointer window){
 		command = DEACTIVATE_CMD;
 	}
 	
-	serWriteCommand(command, 0,0,blank_buffer);
+	if(serWriteCommand(command, 0,0,blank_buffer)){
+		gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), buf);
+	}
 }
 
 void StartWriteButton_clicked_callback(GtkWidget *widget, gpointer window){	
@@ -299,7 +301,9 @@ void StartWriteButton_clicked_callback(GtkWidget *widget, gpointer window){
 		command = EEPROM_WRITE_END_CMD;
 	}
 	
-	serWriteCommand(command, 0,0,blank_buffer);
+	if(serWriteCommand(command, 0,0,blank_buffer)){
+		gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), buf);
+	}
 }
 
 void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
@@ -344,5 +348,7 @@ void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
 		 break;
 	 }
 	 
-	 serWriteCommand(command_index, arg1, arg2, cube_buffer);
+	 if(serWriteCommand(command_index, arg1, arg2, cube_buffer)){
+		 gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), buf);
+	 }
 }

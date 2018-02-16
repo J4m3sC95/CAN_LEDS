@@ -43,7 +43,7 @@ void serial_setup(){
 	serial_connected = false;
  }
  
- void serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *led_buf){
+ int serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *led_buf){
 	 //build and send command
 	 buf_size = sprintf(buf, "<%d,%d,%d,%d,%d,%d>", cmd, arg1, arg2, led_buf[0], led_buf[1], led_buf[2]);
 	 
@@ -53,8 +53,13 @@ void serial_setup(){
 	 if(serial_connected){
 		 serWrite(buf, buf_size);
 		 // wait for the confirmation from device and display on UI
+		 res = serRead(buf,255);
+		 buf[res]=0;
+		 
+		 return 1;
 	 }
 	 else{
 		printf("Serial port not open!\n");
+		return 0;
 	}
 }

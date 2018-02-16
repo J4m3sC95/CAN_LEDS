@@ -29,6 +29,6 @@ void serial_setup();
 char serRead(void *buf, size_t count);
 void serWrite(void *buf, size_t count);
 void serial_cleanup();
-void serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *buf);
+int serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *buf);
 
 #endif /* SERIAL_H_ */
