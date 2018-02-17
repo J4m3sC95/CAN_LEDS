@@ -11,6 +11,7 @@
 
 #include "sam.h"
 #include <inttypes.h>
+#include <stdbool.h>
 
 // Definitions for xplained mini connections
 #define LED_PORT	PORT_PA09

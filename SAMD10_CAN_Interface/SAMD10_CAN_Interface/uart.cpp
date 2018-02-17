@@ -10,7 +10,15 @@
 static volatile PortGroup *porta = (PortGroup *)PORT;
 static volatile SercomUsart *uart = (SercomUsart *)SERCOM0;
 
-void Uart::setup(){
+volatile bool commandReady = false;
+volatile bool receivingCommand = false;
+volatile int commandCount = 0;
+volatile int buff[10];
+
+char rxString[] = "Accepted!\n";
+char rxFailString[] = "Command Rejected\n";
+
+void serialSetup(){
 	//setup tx pin to output
 	porta->DIR.bit.DIR |= TX_PORT;
 	
@@ -52,7 +60,12 @@ void Uart::setup(){
 	NVIC_EnableIRQ(SERCOM0_IRQn);
 }
 
-void Uart::print(char *buffer, uint16_t char_count){
+void serialWriteByte(uint8_t byte){
+	uart->DATA.bit.DATA = byte;
+	while(!uart->INTFLAG.bit.DRE);
+}
+
+void serialPrint(char *buffer, uint16_t char_count){
 	uint16_t n;
 	for(n = 0; n <char_count; n++){
 		uart->DATA.bit.DATA = buffer[n];
@@ -60,15 +73,86 @@ void Uart::print(char *buffer, uint16_t char_count){
 	} 
 }
 
+void serialPrintString(char *buffer){
+	uint16_t n = 0;
+	while(buffer[n] != 0){
+		uart->DATA.bit.DATA = buffer[n];
+		while(!uart->INTFLAG.bit.DRE);
+		n++;
+	}
+}
+
 // function for receiving data through polling
-char Uart::receive(){
+char serialReceive(){
 	while(!uart->INTFLAG.bit.RXC);
 	return uart->DATA.bit.DATA;
+}
+
+command serialReceiveCommand(){
+	int n, temparg1, temparg2;
+	command output;
+	while(!commandReady);
+	output.raw.commandID = buff[0];
+	output.raw.arg1 = buff[1];
+	output.raw.arg2 = buff[2];
+	for(n = 0; n< 6; n++){
+		output.CANdata[n+2] = buff[n+3];
+	}
+	
+	temparg1 = output.raw.arg1;
+	temparg2 = output.raw.arg2;
+	
+	serialPrintString((char *)"Command=");
+	serialWriteByte(output.raw.commandID + 48);
+	serialPrintString((char *)", Arg1=");
+	serialWriteByte(temparg1 + 48);
+	serialPrintString((char *)", Arg2=");
+	serialWriteByte(temparg2 + 48);
+	
+	serialPrintString((char *)", LED Layers=");
+	
+	for(n = 0; n< 3; n++){
+		serialWriteByte((output.raw.led_buff[n] / 100) + 48);
+		serialWriteByte(((output.raw.led_buff[n] / 10)%10)+48);
+		serialWriteByte((output.raw.led_buff[n] % 10)+48);
+		if(n == 2){
+			serialPrintString((char *)": ");
+		}
+		else{
+			serialWriteByte((uint8_t)',');
+		}
+	}
+	
+	serialPrintString(rxString);
+	
+	commandReady = false;
+	
+	return output;	
 }
 
 // interrupt handler for receiving data
 void SERCOM0_Handler(){
 	uint8_t data = uart->DATA.bit.DATA;
-	uart->DATA.bit.DATA = data;
-	porta->OUTTGL.reg = PORT_PA09;
+	//serialWriteByte(data);
+	porta->OUTTGL.reg = LED_PORT;
+	if(!commandReady){		
+		if((!receivingCommand) && (data == '<')){
+			receivingCommand = true;
+			commandCount = 0;
+		}
+		else if(receivingCommand && (data == '>')){
+			receivingCommand = false;
+			if(commandCount == 9){
+				commandReady = true;
+			}
+			else{
+				commandReady = false;
+				serialPrintString(rxFailString);
+			}			
+		}
+		else if(receivingCommand && (data != ',')){
+			buff[commandCount] = data;
+			commandCount++;
+		}
+	}	
 }
