@@ -135,13 +135,18 @@ void gtk_build_window(){
 	gtk_box_pack_start(GTK_BOX(SerialHbox), SerialTestButton, TRUE, TRUE, 0);
 	
 	// Serial Output Label	
-	SerialOutputLabel = gtk_label_new("SerialOutput");
+	SerialOutputLabel = gtk_label_new("Received Serial Data:");
 	SerialOutputLabelHalign = gtk_alignment_new(0,0,0,0);
 	
 	gtk_container_add(GTK_CONTAINER(SerialOutputLabelHalign), SerialOutputLabel);
 	
 	// Serial Output Text Box	
+	SerialOutputHbox = gtk_hbox_new(FALSE, 1);
 	SerialOutputTextBox = gtk_entry_new();
+	SerialOutputClearButton = gtk_button_new_with_label("   Clear   ");
+	
+	gtk_box_pack_start(GTK_BOX(SerialOutputHbox), SerialOutputTextBox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(SerialOutputHbox), SerialOutputClearButton, FALSE,FALSE, 0);
 	
 	// Overall Window Layout Table	
 	WindowLayoutTable = gtk_table_new(4,1,FALSE);
@@ -149,7 +154,7 @@ void gtk_build_window(){
 	gtk_table_attach(GTK_TABLE(WindowLayoutTable), SerialHbox, 0,1,0,1, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 0,3) ;
 	gtk_table_attach(GTK_TABLE(WindowLayoutTable), controlNotebook, 0,1,1,2, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 0,3) ;
 	gtk_table_attach(GTK_TABLE(WindowLayoutTable), SerialOutputLabelHalign, 0,1,2,3, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 0,3) ;
-	gtk_table_attach(GTK_TABLE(WindowLayoutTable), SerialOutputTextBox, 0,1,3,4, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 0,3) ;
+	gtk_table_attach(GTK_TABLE(WindowLayoutTable), SerialOutputHbox, 0,1,3,4, GTK_EXPAND | GTK_FILL,GTK_EXPAND | GTK_FILL, 0,3) ;
 	
 	// add the table to the window	
 	gtk_container_add(GTK_CONTAINER(window),WindowLayoutTable);
@@ -169,6 +174,7 @@ void gtk_set_callbacks(){
 	g_signal_connect(StartWriteButton, "clicked", G_CALLBACK(StartWriteButton_clicked_callback), NULL);
 	g_signal_connect(SendButton, "clicked", G_CALLBACK(SendButton_clicked_callback), NULL);
 	g_signal_connect(SerialTestButton, "clicked", G_CALLBACK(SerialTestButton_clicked_callback), NULL);
+	g_signal_connect(SerialOutputClearButton, "clicked", G_CALLBACK(SerialOutputClearButton_clicked_callback), NULL);
 }
 
 void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
@@ -178,8 +184,9 @@ void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
 		buf[2] = '\n';
 		serWrite(buf, 3);
 		res = serRead(buf,255); 
-		buf[res]=0;
-		printf("%s", buf);
+		buf[res-1]=0;
+		printf("%s\n", buf);
+		gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), buf);
 	}
 	else{
 		printf("Serial port not open!\n");
@@ -190,11 +197,15 @@ void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
 	 if(!serial_connected){
 		 serial_setup();
 		 gtk_label_set_text(GTK_LABEL(SerialStatusLabel), "Connected");
+		 gtk_button_set_label(GTK_BUTTON(SerialConnectButton), "Disconnect");
+		 printf("Connected\n");
 	 }
 	 else
 	 {
 		 serial_cleanup();
 		 gtk_label_set_text(GTK_LABEL(SerialStatusLabel), "Disconnected");
+		 gtk_button_set_label(GTK_BUTTON(SerialConnectButton), "Connect");
+		 printf("Disconnected\n");
 	 }	 
  }
  
@@ -351,4 +362,8 @@ void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
 	 if(serWriteCommand(command_index, arg1, arg2, cube_buffer)){
 		 gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), buf);
 	 }
+}
+
+void SerialOutputClearButton_clicked_callback(GtkWidget *widget, gpointer window){
+	gtk_entry_set_text(GTK_ENTRY(SerialOutputTextBox), "");
 }

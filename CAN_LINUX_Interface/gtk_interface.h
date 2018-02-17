@@ -50,6 +50,8 @@ GtkWidget *SerialHbox;
 GtkWidget *SerialOutputLabel;
 GtkWidget *SerialOutputLabelHalign;
 GtkWidget *SerialOutputTextBox;
+GtkWidget *SerialOutputHbox;
+GtkWidget *SerialOutputClearButton;
 GtkWidget *WindowLayoutTable;
 
 // function prototypes
@@ -64,5 +66,6 @@ void ActivateButton_clicked_callback(GtkWidget *widget, gpointer window);
 void StartWriteButton_clicked_callback(GtkWidget *widget, gpointer window);
 void SendButton_clicked_callback(GtkWidget *widget, gpointer window);
 void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window);
+void SerialOutputClearButton_clicked_callback(GtkWidget *widget, gpointer window);
 
 #endif /* GTK_INTERFACE_H_ */
