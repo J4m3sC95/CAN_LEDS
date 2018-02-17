@@ -44,6 +44,8 @@ void serial_setup(){
  }
  
  int serWriteCommand(uint8_t cmd, uint8_t arg1, uint8_t arg2, uint16_t *led_buf){
+	 int n;
+	 
 	 //build and send command
 	 buf_size = sprintf(buf, "<%d,%d,%d,%d,%d,%d>\n", cmd, arg1, arg2, led_buf[0], led_buf[1], led_buf[2]);
 	 
@@ -51,7 +53,17 @@ void serial_setup(){
 	 printf("Sending command: %s", buf);
 	 
 	 if(serial_connected){
-		 serWrite(buf, buf_size);
+		 //serWrite(buf, buf_size);
+		 buf[0] = '<';
+		 buf[1] = cmd;
+		 buf[2] = arg1;
+		 buf[3] = arg2;
+		 for(n = 0; n<3; n++){
+			 buf[4+(n*2)] = (uint8_t)(led_buf[n] & 0xFF);
+			 buf[5+(n*2)] = (uint8_t)((led_buf[n] >> 8) & 0xFF);
+		 }
+		 buf[4+n*2] = '>';
+		 serWrite(buf, 11);
 		 // wait for the confirmation from device and display on UI
 		 res = serRead(buf,255);
 		 buf[res-1]=0;
