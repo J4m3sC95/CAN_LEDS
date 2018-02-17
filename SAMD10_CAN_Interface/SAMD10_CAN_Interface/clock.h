@@ -11,6 +11,6 @@
 
 #include "main.h"
 
-void clock_setup();
+void clockSetup();
 
 #endif /* CLOCK_H_ */

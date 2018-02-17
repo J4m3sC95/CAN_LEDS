@@ -15,7 +15,7 @@ static volatile PortGroup *porta = (PortGroup *)PORT;
 static volatile Pm *power = (Pm *)PM;
 static volatile Gclk *genclk = (Gclk *)GCLK;
 
-void clock_setup(){
+void clockSetup(){
 	//setup external 8MHz clock from ATmega32u4 (mEDBG)
 	porta->PINCFG[CLK_IN_PIN].bit.PMUXEN=1;
 	porta->PINCFG[CLK_IN_PIN].bit.INEN=1;

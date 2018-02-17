@@ -14,16 +14,18 @@
 // Peripherals
 static volatile PortGroup *porta = (PortGroup *)PORT;
 
-Uart Serial;
+command cmd;
 
 int main(void)
 {	
-	clock_setup();
-	Serial.setup();
+	clockSetup();
+	serialSetup();
 		
 	// setup led output
-	porta->DIR.bit.DIR |= PORT_PA09;
-	porta->OUT.bit.OUT |= PORT_PA09;
+	porta->DIR.bit.DIR |= LED_PORT;
+	porta->OUT.bit.OUT |= LED_PORT;
 	
-	while (1);
+	while (1){
+		cmd = serialReceiveCommand();
+	}
 }
