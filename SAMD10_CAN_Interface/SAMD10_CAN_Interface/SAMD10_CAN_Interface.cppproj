@@ -206,6 +206,12 @@
     <Compile Include="main.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="spi.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="spi.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="uart.cpp">
       <SubType>compile</SubType>
     </Compile>

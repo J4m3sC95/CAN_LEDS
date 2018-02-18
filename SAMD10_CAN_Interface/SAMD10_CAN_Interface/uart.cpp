@@ -68,16 +68,14 @@ void serialWriteByte(uint8_t byte){
 void serialPrint(char *buffer, uint16_t char_count){
 	uint16_t n;
 	for(n = 0; n <char_count; n++){
-		uart->DATA.bit.DATA = buffer[n];
-		while(!uart->INTFLAG.bit.DRE);
+		serialWriteByte(buffer[n]);
 	} 
 }
 
 void serialPrintString(char *buffer){
 	uint16_t n = 0;
 	while(buffer[n] != 0){
-		uart->DATA.bit.DATA = buffer[n];
-		while(!uart->INTFLAG.bit.DRE);
+		serialWriteByte(buffer[n]);
 		n++;
 	}
 }
