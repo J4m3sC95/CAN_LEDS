@@ -5,9 +5,6 @@
  *  Author: James
  */ 
 
-
-
-
 #include "clock.h"
 
 // Peripherals
