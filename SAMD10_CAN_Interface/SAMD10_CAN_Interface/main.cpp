@@ -18,18 +18,15 @@ static volatile PortGroup *porta = (PortGroup *)PORT;
 command cmd;
 
 int main(void)
-{	
-	//int n;
-	//uint8_t data = 0;
+{		
+	// setup led output
+	porta->DIR.bit.DIR |= LED_PORT;
+	porta->OUT.bit.OUT |= LED_PORT;
 	
 	clockSetup();
 	serialSetup();
 	spiSetup();
-	CAN_setup();
-		
-	// setup led output
-	porta->DIR.bit.DIR |= LED_PORT;
-	porta->OUT.bit.OUT |= LED_PORT;
+	CAN_setup();	
 	
 	while (1){
 		cmd = serialReceiveCommand();

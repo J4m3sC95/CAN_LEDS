@@ -26,8 +26,6 @@ void CAN_setup(){
 	CHIP_DISABLE();
 
 	SPI.begin();
-	#else
-	spiSetup();
 #endif
  
   MCP2515_reset();
