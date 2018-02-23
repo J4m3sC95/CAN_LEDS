@@ -19,13 +19,18 @@ char rxString[] = "Accepted!\n";
 char rxFailString[] = "Command Rejected\n";
 
 void serialSetup(){
-	//setup tx pin to output
+	// setup tx pin to output
 	porta->DIR.bit.DIR |= TX_PORT;
+	
+	// setup rx pin to input with pull-up (HIGH = IDLE)
+	porta->PINCFG[RX_PIN].bit.INEN=1;
+	porta->PINCFG[RX_PIN].bit.PULLEN = 1;
+	porta->OUTSET.bit.OUTSET = RX_PORT;
 	
 	//setup rx/tx pin multiplexers
 	porta->PINCFG[TX_PIN].bit.PMUXEN=1;
 	porta->PINCFG[RX_PIN].bit.PMUXEN=1;
-	porta->PINCFG[RX_PIN].bit.INEN=1;
+	
 	
 	porta->PMUX[RX_PIN/2].bit.PMUXO=PORT_PMUX_PMUXO_C_Val;
 	porta->PMUX[TX_PIN/2].bit.PMUXE=PORT_PMUX_PMUXE_C_Val;
@@ -68,16 +73,14 @@ void serialWriteByte(uint8_t byte){
 void serialPrint(char *buffer, uint16_t char_count){
 	uint16_t n;
 	for(n = 0; n <char_count; n++){
-		uart->DATA.bit.DATA = buffer[n];
-		while(!uart->INTFLAG.bit.DRE);
+		serialWriteByte(buffer[n]);
 	} 
 }
 
 void serialPrintString(char *buffer){
 	uint16_t n = 0;
 	while(buffer[n] != 0){
-		uart->DATA.bit.DATA = buffer[n];
-		while(!uart->INTFLAG.bit.DRE);
+		serialWriteByte(buffer[n]);
 		n++;
 	}
 }
