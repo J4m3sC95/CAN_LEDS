@@ -179,8 +179,8 @@ void gtk_set_callbacks(){
 
 void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
 	if(serial_connected){
-		buf[0] = 'a';
-		buf[1] = 'b';
+		buf[0] = '<';
+		buf[1] = '>';
 		buf[2] = '\n';
 		serWrite(buf, 3);
 		res = serRead(buf,255); 
