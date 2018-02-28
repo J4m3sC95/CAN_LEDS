@@ -34,7 +34,7 @@ void gtk_build_window(){
 	gtk_window_set_default_size(GTK_WINDOW(window), 300,200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 15);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);	
-	icon = create_pixbuf("led_red.png");  
+	icon = create_pixbuf("/home/james/bin/led_red.png");  
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
 	
 	// LED Cube notebook tab

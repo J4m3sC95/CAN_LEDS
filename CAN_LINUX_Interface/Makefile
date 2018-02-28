@@ -2,6 +2,8 @@ CC=gcc
 CFLAGS=-Wall
 
 all: CAN_Interface.exe
+	cp CAN_Interface.exe ~/bin/CAN
+	cp led_red.png ~/bin/led_red.png
 
 CAN_Interface.exe:  CAN_Interface.c Serial.o gtk_interface.o
 	$(CC) -o CAN_Interface.exe CAN_Interface.c Serial.o gtk_interface.o $(CFLAGS) `pkg-config --libs --cflags gtk+-2.0` 

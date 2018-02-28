@@ -58,9 +58,9 @@ void serial_setup(){
 		 buf[1] = cmd;
 		 buf[2] = arg1;
 		 buf[3] = arg2;
-		 for(n = 0; n<3; n++){
-			 buf[4+(n*2)] = (uint8_t)(led_buf[n] & 0xFF);
-			 buf[5+(n*2)] = (uint8_t)((led_buf[n] >> 8) & 0xFF);
+		 for(n = 0; n<3; n++){			 			 
+			buf[4+(n*2)] = (uint8_t)(led_buf[n] & 0xFF);
+			buf[5+(n*2)] = (uint8_t)((led_buf[n] >> 8) & 0xFF);
 		 }
 		 buf[4+n*2] = '>';
 		 serWrite(buf, 11);
