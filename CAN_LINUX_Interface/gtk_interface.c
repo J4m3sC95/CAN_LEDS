@@ -107,7 +107,7 @@ void gtk_build_window(){
 	// Column 4 for the buttons	
 	ledCubeControlTableButtonVbox = gtk_vbox_new(TRUE,1);
 	
-	ActivateButton = gtk_button_new_with_label("Activate");
+	ActivateButton = gtk_button_new_with_label("Deactivate");
 	StartWriteButton = gtk_button_new_with_label("Start Write");
 	SendButton = gtk_button_new_with_label("Send");
 	
@@ -341,7 +341,10 @@ void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
 		 case ROTATE_CMD:
 		 case TRANSLATE_CMD:
 		 {
-			 arg2 = gtk_combo_box_get_active(GTK_COMBO_BOX(Arg2Control));
+			 arg2 = gtk_combo_box_get_active(GTK_COMBO_BOX(Arg2Control)) + 1;
+			 if(arg2 == 2){
+				 arg2=-1;
+			 }
 		 }			 
 		 case MIRROR_CMD:
 		 {
