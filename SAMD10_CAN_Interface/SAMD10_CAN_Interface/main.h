@@ -13,6 +13,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define PORTA ((PortGroup *)PORT)
 
 // Definitions for xplained mini connections
 #define LED_PORT	PORT_PA09
@@ -43,11 +44,11 @@
 typedef union{
 	struct{
 		uint8_t commandID;
-		uint8_t arg1:4;
-		uint8_t arg2:4;
+		uint8_t arg1;
+		uint8_t arg2;
 		uint16_t led_buff[4];
 	}raw;
-	uint8_t CANdata[9];
+	uint8_t CANdata[11];
 } command;
 
 

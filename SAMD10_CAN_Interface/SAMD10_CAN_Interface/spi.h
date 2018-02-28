@@ -11,8 +11,10 @@
 
 #include "main.h"
 
-#define CHIP_ENABLE()	porta->OUTCLR.reg = SS_PORT
-#define CHIP_DISABLE()	porta->OUTSET.reg = SS_PORT;
+#define CHIP_ENABLE()	PORTA->OUTCLR.reg = SS_PORT
+#define CHIP_DISABLE()	PORTA->OUTSET.reg = SS_PORT;
+
+#define SPI ((SercomSpi *)SERCOM1)
 
 void spiSetup();
 uint8_t spiTransfer(uint8_t data);

@@ -8,11 +8,9 @@
 #include "uart.h"
 #include "clock.h"
 
-static volatile PortGroup *porta = (PortGroup *)PORT;
-static volatile SercomUsart *uart = (SercomUsart *)SERCOM0;
-
 volatile bool commandReady = false;
 volatile bool receivingCommand = false;
+volatile bool commandFail = false;
 volatile int commandCount = 0;
 volatile int buff[10];
 
@@ -21,54 +19,54 @@ char rxFailString[] = "Command Rejected\n";
 
 void serialSetup(){
 	// setup tx pin to output
-	porta->DIRSET.bit.DIRSET = TX_PORT;
+	PORTA->DIRSET.bit.DIRSET = TX_PORT;
 	
 	// setup rx pin to input with pull-up (HIGH = IDLE)
-	porta->PINCFG[RX_PIN].bit.INEN=1;
-	porta->PINCFG[RX_PIN].bit.PULLEN = 1;
-	porta->OUTSET.bit.OUTSET = RX_PORT;
+	PORTA->PINCFG[RX_PIN].bit.INEN=1;
+	PORTA->PINCFG[RX_PIN].bit.PULLEN = 1;
+	PORTA->OUTSET.bit.OUTSET = RX_PORT;
 	
 	//setup rx/tx pin multiplexers
-	porta->PINCFG[TX_PIN].bit.PMUXEN=1;
-	porta->PINCFG[RX_PIN].bit.PMUXEN=1;
+	PORTA->PINCFG[TX_PIN].bit.PMUXEN=1;
+	PORTA->PINCFG[RX_PIN].bit.PMUXEN=1;
 	
 	
-	porta->PMUX[RX_PIN/2].bit.PMUXO=PORT_PMUX_PMUXO_C_Val;
-	porta->PMUX[TX_PIN/2].bit.PMUXE=PORT_PMUX_PMUXE_C_Val;
+	PORTA->PMUX[RX_PIN/2].bit.PMUXO=PORT_PMUX_PMUXO_C_Val;
+	PORTA->PMUX[TX_PIN/2].bit.PMUXE=PORT_PMUX_PMUXE_C_Val;
 	
 	//uart setup
 	// select correct clock mode either external (0x0 default) or internal (0x1)
-	uart->CTRLA.bit.MODE = 1;
+	UART->CTRLA.bit.MODE = 1;
 	// select comms mode (asynchronous (default or synchronous))
-	//uart->CTRLA.bit.CMODE = 0;
+	//UART->CTRLA.bit.CMODE = 0;
 	// select sercom pads for rx and tx
-	uart->CTRLA.bit.RXPO=3;
-	uart->CTRLA.bit.TXPO=1;
+	UART->CTRLA.bit.RXPO=3;
+	UART->CTRLA.bit.TXPO=1;
 	// select character size (8 = default)
-	//uart->CTRLB.bit.CHSIZE = 0;
+	//UART->CTRLB.bit.CHSIZE = 0;
 	// choose data order (MSB first = default)
-	uart->CTRLA.bit.DORD = 1;
+	UART->CTRLA.bit.DORD = 1;
 	// choose parity (none = default)
 	// choose stop bit numbers (1 = default)
-	//uart->CTRLB.bit.SBMODE = 0;
+	//UART->CTRLB.bit.SBMODE = 0;
 	// configure baud rate for 8MHz clock (9600)
 	// BAUD = 65536*(1-(16*baud/8MHz))
-	uart->BAUD.bit.BAUD = 64278;
+	UART->BAUD.bit.BAUD = 64278;
 	// enable transmitter/receiver
-	uart->CTRLB.reg |= SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
-	while(uart->SYNCBUSY.bit.CTRLB);
+	UART->CTRLB.reg |= SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
+	while(UART->SYNCBUSY.bit.CTRLB);
 	// enable UART
-	uart->CTRLA.bit.ENABLE = 1;
-	while(uart->SYNCBUSY.bit.ENABLE);
+	UART->CTRLA.bit.ENABLE = 1;
+	while(UART->SYNCBUSY.bit.ENABLE);
 	
 	//enable interrupts
-	uart->INTENSET.bit.RXC = 1;
+	UART->INTENSET.bit.RXC = 1;
 	NVIC_EnableIRQ(SERCOM0_IRQn);
 }
 
 void serialWriteByte(uint8_t byte){
-	uart->DATA.bit.DATA = byte;
-	while(!uart->INTFLAG.bit.DRE);
+	UART->DATA.bit.DATA = byte;
+	while(!UART->INTFLAG.bit.DRE);
 }
 
 void serialPrint(char *buffer, uint16_t char_count){
@@ -88,19 +86,25 @@ void serialPrintString(char *buffer){
 
 // function for receiving data through polling
 char serialReceive(){
-	while(!uart->INTFLAG.bit.RXC);
-	return uart->DATA.bit.DATA;
+	while(!UART->INTFLAG.bit.RXC);
+	return UART->DATA.bit.DATA;
 }
 
 command serialReceiveCommand(){
 	int n, temparg1, temparg2;
 	command output;
-	while(!commandReady);
+	while((!commandReady) || commandFail){
+		if(commandFail){
+			serialPrintString(rxFailString);
+			commandReady = false;
+			commandFail = false;
+		}
+	}
 	output.raw.commandID = buff[0];
 	output.raw.arg1 = buff[1];
 	output.raw.arg2 = buff[2];
-	for(n = 0; n< 6; n++){
-		output.CANdata[n+2] = buff[n+3];
+	for(n = 3; n< 9; n++){
+		output.CANdata[n+1] = buff[n];
 	}
 	
 	temparg1 = output.raw.arg1;
@@ -136,9 +140,9 @@ command serialReceiveCommand(){
 
 // interrupt handler for receiving data
 void SERCOM0_Handler(){
-	uint8_t data = uart->DATA.bit.DATA;
+	uint8_t data = UART->DATA.bit.DATA;
 	//serialWriteByte(data);
-	//porta->OUTTGL.reg = LED_PORT;
+	//PORTA->OUTTGL.reg = LED_PORT;
 	if(!commandReady){		
 		if((!receivingCommand) && (data == '<')){
 			receivingCommand = true;
@@ -146,12 +150,12 @@ void SERCOM0_Handler(){
 		}
 		else if(receivingCommand && (data == '>')){
 			receivingCommand = false;
+			commandReady = true;
 			if(commandCount == 9){
-				commandReady = true;
+				commandFail = false;
 			}
 			else{
-				commandReady = false;
-				serialPrintString(rxFailString);
+				commandFail = true;				
 			}			
 		}
 		else if(receivingCommand && (data != ',')){

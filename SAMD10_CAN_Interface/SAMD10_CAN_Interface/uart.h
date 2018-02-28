@@ -11,6 +11,8 @@
 
 #include "main.h"
 
+#define UART ((SercomUsart *)SERCOM0)
+
 void serialSetup();
 void serialPrint(char *buffer, uint16_t char_count);
 void serialPrintString(char *buffer);

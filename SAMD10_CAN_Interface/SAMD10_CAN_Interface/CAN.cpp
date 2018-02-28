@@ -7,10 +7,6 @@
 
 #include "CAN.h"
 
-#ifndef ARDUINO
-static volatile PortGroup *porta = (PortGroup *)PORT;
-#endif
-
 // config values (CNF3, CNF2. CNF1)
 uint8_t config[4] = {0b00000010, 0b11001001, 0x00};
 // operation mode 0x40 = loopback
