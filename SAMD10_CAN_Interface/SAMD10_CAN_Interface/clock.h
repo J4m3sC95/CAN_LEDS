@@ -12,5 +12,7 @@
 #include "main.h"
 
 void clockSetup();
+void watchdogSetup();
+void watchdogClear();
 
 #endif /* CLOCK_H_ */

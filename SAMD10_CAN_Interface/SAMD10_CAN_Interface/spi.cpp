@@ -35,14 +35,16 @@ void spiSetup(){
 	// select frame format (0 = no frame format)
 	//spi->CTRLA.bit.FORM = 0;
 	// select input/output pads
-	spi->CTRLA.bit.DIPO = 0;
-	spi->CTRLA.bit.DOPO = 1;
+	spi->CTRLA.bit.DIPO = 2;
+	spi->CTRLA.bit.DOPO = 3;
 	// select char size (default = 0: 8bits)
 	//spi->CTRLB.bit.CHSIZE = 0;
 	// select data direction (default = 0, MSB first)
 	//spi->CTRLA.bit.DORD = 0;
 	// setup 1MHZ BAUD = (8MHz/(2*1MHz)) - 1 = 3
-	spi->BAUD.bit.BAUD = 3;
+	//spi->BAUD.bit.BAUD = 3;
+	// setup 0.1MHZ BAUD = (8MHz/(2*0.1MHz)) - 1 = 3
+	spi->BAUD.bit.BAUD = 39;	
 	// hardware SS pin (disable = 0)
 	//spi->CTRLB.bit.MSSEN = 0;
 	// enable receiver

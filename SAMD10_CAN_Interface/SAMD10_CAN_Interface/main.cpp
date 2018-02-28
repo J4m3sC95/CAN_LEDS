@@ -12,18 +12,11 @@
 #include "spi.h"
 #include "CAN.h"
 
-// Peripherals
-static volatile PortGroup *porta = (PortGroup *)PORT;
-
 command cmd;
 
 int main(void)
-{		
-	// setup led output
-	porta->DIR.bit.DIR |= LED_PORT;
-	porta->OUT.bit.OUT |= LED_PORT;
-	
-	clockSetup();
+{				
+	clockSetup();	
 	serialSetup();
 	spiSetup();
 	CAN_setup();	
@@ -33,3 +26,7 @@ int main(void)
 		led_cube(cmd.raw.commandID, cmd.raw.arg1, cmd.raw.arg2, cmd.raw.led_buff);
 	}
 }
+
+/* Notes
+- The control of the led cube is possible
+- there appears to be a problem with writing to EEPROM, possibly an issue with the delay and loop arguments being truncated by the typedef-union

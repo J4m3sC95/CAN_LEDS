@@ -6,6 +6,7 @@
  */ 
 
 #include "uart.h"
+#include "clock.h"
 
 static volatile PortGroup *porta = (PortGroup *)PORT;
 static volatile SercomUsart *uart = (SercomUsart *)SERCOM0;
@@ -20,7 +21,7 @@ char rxFailString[] = "Command Rejected\n";
 
 void serialSetup(){
 	// setup tx pin to output
-	porta->DIR.bit.DIR |= TX_PORT;
+	porta->DIRSET.bit.DIRSET = TX_PORT;
 	
 	// setup rx pin to input with pull-up (HIGH = IDLE)
 	porta->PINCFG[RX_PIN].bit.INEN=1;
@@ -137,7 +138,7 @@ command serialReceiveCommand(){
 void SERCOM0_Handler(){
 	uint8_t data = uart->DATA.bit.DATA;
 	//serialWriteByte(data);
-	porta->OUTTGL.reg = LED_PORT;
+	//porta->OUTTGL.reg = LED_PORT;
 	if(!commandReady){		
 		if((!receivingCommand) && (data == '<')){
 			receivingCommand = true;
