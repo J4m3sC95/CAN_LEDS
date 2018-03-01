@@ -41,10 +41,10 @@
 
 // can message struct
 struct canmsg{
-  uint32_t ID;
-  uint8_t IDE;
-  uint8_t RTR;
-  uint8_t DLC;
+  uint32_t ID:29;
+  uint32_t IDE:1;
+  uint32_t RTR:1;
+  uint8_t DLC:4;
   uint8_t data[9];
 };
 

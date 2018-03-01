@@ -63,77 +63,8 @@ void led_cube(uint8_t instruction, uint16_t arg1, uint8_t arg2, uint16_t *buffer
       test.data[(n << 1) + 2] = (buffer[n] & 0xFF00) >> 8;
     }
   }
-  
-
 
   CAN_tx(test,0);
-}
-
-/*
-MCP2515 SPI Interface
-- do not try comms before 128 clock cycles have passed (16us)
-- first byte after CS is lowered = instruction/command byte
-- comms format: CS low, instruction, address, data
-- comms types:
-  - reset - recommended at start-up
-  - read - instruction, address then data, reads endlessly until CS Raised
-  - write = same as read but writing data
-  - read status = read 8 bits of status (over and over if clock continues)
-  - rx status
-  - bit modify = command, address, mask, data
-*/
-
-// maybe make functions for ease of use
-void MCP2515_reset(){
-  CHIP_ENABLE();
-  spi(RST_INST);
-  CHIP_DISABLE();
-}
-
-void MCP2515_write(uint8_t address, uint8_t *data, uint8_t count){
-  uint8_t n;
-  CHIP_ENABLE();
-  spi(WRITE_INST);
-  spi(address);
-  for(n = 0; n < count; n++){
-    spi(data[n]);
-  }
-  CHIP_DISABLE();
-}
-
-void MCP2515_read(uint8_t address, uint8_t *data, uint8_t count){
-  uint8_t n;
-  CHIP_ENABLE();
-  spi(READ_INST);
-  spi(address);
-  for(n = 0; n < count; n++){
-    data[n] = spi(0x00);
-  }
-  CHIP_DISABLE();
-}
-
-void MCP2515_rts(uint8_t buffer_number){
-  CHIP_ENABLE();
-  spi(RTS_INST | (1 << buffer_number));
-  CHIP_DISABLE();
-}
-
-uint8_t MCP2515_status(){
-  uint8_t status;
-  CHIP_ENABLE();
-  spi(READ_STATUS);
-  status = spi(0);
-  CHIP_DISABLE();
-  return status;
-}
-
-void MCP2515_bitmod(uint8_t address, uint8_t mask, uint8_t data){
-  CHIP_ENABLE();
-  spi(BIT_MODIFY);
-  spi(address);
-  spi(mask);
-  spi(data);
-  CHIP_DISABLE();
 }
 
 /*
@@ -228,3 +159,72 @@ void CAN_rx(canmsg output, uint8_t buffer_number){
     MCP2515_bitmod(0x2C, 0x01, 0x00);
   }while(MCP2515_status() & 1);
 }
+
+
+/*
+MCP2515 SPI Interface
+- do not try comms before 128 clock cycles have passed (16us)
+- first byte after CS is lowered = instruction/command byte
+- comms format: CS low, instruction, address, data
+- comms types:
+  - reset - recommended at start-up
+  - read - instruction, address then data, reads endlessly until CS Raised
+  - write = same as read but writing data
+  - read status = read 8 bits of status (over and over if clock continues)
+  - rx status
+  - bit modify = command, address, mask, data
+*/
+
+// maybe make functions for ease of use
+void MCP2515_reset(){
+  CHIP_ENABLE();
+  spi(RST_INST);
+  CHIP_DISABLE();
+}
+
+void MCP2515_write(uint8_t address, uint8_t *data, uint8_t count){
+  uint8_t n;
+  CHIP_ENABLE();
+  spi(WRITE_INST);
+  spi(address);
+  for(n = 0; n < count; n++){
+    spi(data[n]);
+  }
+  CHIP_DISABLE();
+}
+
+void MCP2515_read(uint8_t address, uint8_t *data, uint8_t count){
+  uint8_t n;
+  CHIP_ENABLE();
+  spi(READ_INST);
+  spi(address);
+  for(n = 0; n < count; n++){
+    data[n] = spi(0x00);
+  }
+  CHIP_DISABLE();
+}
+
+void MCP2515_rts(uint8_t buffer_number){
+  CHIP_ENABLE();
+  spi(RTS_INST | (1 << buffer_number));
+  CHIP_DISABLE();
+}
+
+uint8_t MCP2515_status(){
+  uint8_t status;
+  CHIP_ENABLE();
+  spi(READ_STATUS);
+  status = spi(0);
+  CHIP_DISABLE();
+  return status;
+}
+
+void MCP2515_bitmod(uint8_t address, uint8_t mask, uint8_t data){
+  CHIP_ENABLE();
+  spi(BIT_MODIFY);
+  spi(address);
+  spi(mask);
+  spi(data);
+  CHIP_DISABLE();
+}
+

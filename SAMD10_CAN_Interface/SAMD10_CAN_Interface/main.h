@@ -46,6 +46,7 @@ typedef union{
 		uint8_t commandID;
 		uint8_t arg1;
 		uint8_t arg2;
+		uint8_t :8;
 		uint16_t led_buff[4];
 	}raw;
 	uint8_t CANdata[11];

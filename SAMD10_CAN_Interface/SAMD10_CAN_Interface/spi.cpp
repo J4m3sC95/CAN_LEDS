@@ -38,8 +38,6 @@ void spiSetup(){
 	//SPI->CTRLB.bit.CHSIZE = 0;
 	// select data direction (default = 0, MSB first)
 	//SPI->CTRLA.bit.DORD = 0;
-	// setup 1MHZ BAUD = (8MHz/(2*1MHz)) - 1 = 3
-	//SPI->BAUD.bit.BAUD = 3;
 	// setup 0.1MHZ BAUD = (8MHz/(2*0.1MHz)) - 1 = 3
 	SPI->BAUD.bit.BAUD = 39;	
 	// hardware SS pin (disable = 0)
