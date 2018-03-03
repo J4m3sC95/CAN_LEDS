@@ -354,10 +354,12 @@ void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
 		 case (LOOP_CMD - 4):
 		 {
 			 arg2 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg2Control));
+			 command_index += 4;
 		 }
 		 case (DELAY_CMD - 4):
 		 {
 			 arg1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg1Control));
+			 command_index += 4;
 		 }
 		 break;
 	 }
