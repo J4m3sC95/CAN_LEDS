@@ -6,7 +6,6 @@
  */ 
 
 #include "uart.h"
-#include "clock.h"
 
 volatile bool commandReady = false;
 volatile bool receivingCommand = false;
@@ -44,7 +43,7 @@ void serialSetup(){
 	UART->CTRLA.bit.TXPO=1;
 	// select character size (8 = default)
 	//UART->CTRLB.bit.CHSIZE = 0;
-	// choose data order (MSB first = default)
+	// choose data order (MSB first = default(0))
 	UART->CTRLA.bit.DORD = 1;
 	// choose parity (none = default)
 	// choose stop bit numbers (1 = default)
@@ -91,7 +90,7 @@ char serialReceive(){
 }
 
 command serialReceiveCommand(){
-	int n, temparg1, temparg2;
+	int n;
 	command output;
 	while((!commandReady) || commandFail){
 		if(commandFail){
@@ -101,28 +100,29 @@ command serialReceiveCommand(){
 		}
 	}
 	output.raw.commandID = buff[0];
+	/*
+	// if the command is a delay then put delay count in arg1
+	if(output.raw.commandID == 10){
+		output.raw.arg1 = (buff[1] << 8) | buff[2];
+	}
+	*/
 	output.raw.arg1 = buff[1];
 	output.raw.arg2 = buff[2];
-	for(n = 3; n< 9; n++){
-		output.CANdata[n+1] = buff[n];
+	for(n = 0; n< 3; n++){
+		output.raw.led_buff[n] = (buff[(n*2)+4] << 8) | buff[(n*2) + 3];
 	}
 	
-	temparg1 = output.raw.arg1;
-	temparg2 = output.raw.arg2;
-	
 	serialPrintString((char *)"Command=");
-	serialWriteByte(output.raw.commandID + 48);
+	serialWriteDecimal(output.raw.commandID);
 	serialPrintString((char *)", Arg1=");
-	serialWriteByte(temparg1 + 48);
+	serialWriteDecimal(output.raw.arg1);
 	serialPrintString((char *)", Arg2=");
-	serialWriteByte(temparg2 + 48);
+	serialWriteDecimal(output.raw.arg2);
 	
 	serialPrintString((char *)", LED Layers=");
 	
 	for(n = 0; n< 3; n++){
-		serialWriteByte((output.raw.led_buff[n] / 100) + 48);
-		serialWriteByte(((output.raw.led_buff[n] / 10)%10)+48);
-		serialWriteByte((output.raw.led_buff[n] % 10)+48);
+		serialWriteDecimal(output.raw.led_buff[n]);
 		if(n == 2){
 			serialPrintString((char *)": ");
 		}
@@ -136,6 +136,20 @@ command serialReceiveCommand(){
 	commandReady = false;
 	
 	return output;	
+}
+
+void serialWriteDecimal(uint16_t num){
+	if(num>999){
+		serialWriteByte((num / 1000) + 48);
+	}
+	if(num > 99){
+		serialWriteByte(((num / 100)%10) + 48);
+	}
+	if(num > 9){
+		serialWriteByte(((num / 10)%10)+48);
+	}	
+	
+	serialWriteByte((num % 10)+48);
 }
 
 // interrupt handler for receiving data

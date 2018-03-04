@@ -37,6 +37,37 @@ void CAN_setup(){
   delay(2000);
 }
 
+// buffers for storing cube patterns
+uint16_t test_buffer[4] = {0x1F0, 0x1F0, 0x1F0};
+uint16_t test_buffer1[4] = {0x0145, 0x00, 0x0145};
+uint16_t blank_buffer[4] = {0,0,0};
+
+void led_cube_test(){
+	// stuff from arduino sketch
+	// write effects to LED cube eeprom
+	eeprom_write(EEPROM_WRITE_BEGIN);
+	// load buffer
+	load_buffer(test_buffer);
+	cube_delay(1000);
+	//rotate 20 times
+	cube_rotate(ZAXIS, NEGATIVE);
+	cube_delay(100);
+	cube_loop(2, 19);
+	cube_delay(2000);
+	// mirror 10 times
+	cube_mirror(YZPLANE);
+	cube_delay(100);
+	cube_loop(2,9);
+	cube_delay(2000);
+	// translate a new buffer in
+	clear_tanslate();
+	cube_translate(XAXIS, POSITIVE, test_buffer1);
+	cube_delay(1000);
+	cube_loop(2,2);
+	cube_delay(1000);
+	eeprom_write(EEPROM_WRITE_END);
+}
+
 void led_cube(uint8_t instruction, uint16_t arg1, uint8_t arg2, uint16_t *buffer){
   uint8_t n;
   canmsg test;
@@ -46,22 +77,22 @@ void led_cube(uint8_t instruction, uint16_t arg1, uint8_t arg2, uint16_t *buffer
   test.IDE = 0;
   test.RTR = 0;
   
+  for(n = 0; n<8; n++){
+	  test.data[n] = 0;
+  }
+  
   test.data[0] = instruction;
-  if(instruction == LOOP){
+  if((instruction == LOOP) || (instruction == DELAY)){
     test.data[2] = arg1;
     test.data[3] = arg2;
   }
-  else if(instruction == DELAY){
-    test.data[2] = (arg1 & 0xFF00) >> 8;
-    test.data[3] = arg1 & 0xFF;
-  }
   else{
-    test.data[1] = arg1 | ((arg2 + 1) << 4);
-
-    for(n = 0; n < 3; n++){
-      test.data[(n << 1) + 3] = buffer[n] & 0xFF;
-      test.data[(n << 1) + 2] = (buffer[n] & 0xFF00) >> 8;
-    }
+	  test.data[1] = arg1 | ((arg2 + 1) << 4);
+	  
+	  for(n = 0; n < 3; n++){
+		  test.data[(n << 1) + 3] = buffer[n] & 0xFF;
+		  test.data[(n << 1) + 2] = (buffer[n] & 0xFF00) >> 8;
+	  }
   }
 
   CAN_tx(test,0);

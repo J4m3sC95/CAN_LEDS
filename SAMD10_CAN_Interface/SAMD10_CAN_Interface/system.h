@@ -11,7 +11,7 @@
 
 #include "main.h"
 
-void clockSetup();
+void systemSetup();
 void watchdogSetup();
 void watchdogClear();
 

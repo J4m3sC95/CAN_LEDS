@@ -195,10 +195,10 @@
     <Compile Include="CAN.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="clock.cpp">
+    <Compile Include="system.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="clock.h">
+    <Compile Include="system.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\startup_samd10.c">

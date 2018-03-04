@@ -19,5 +19,6 @@ void serialPrintString(char *buffer);
 char serialReceive();
 command serialReceiveCommand();
 void serialWriteByte(uint8_t byte);
+void serialWriteDecimal(uint16_t num);
 
 #endif /* UART_H_ */

@@ -26,7 +26,7 @@ CAN led cube controls:
 - byte 1 = argument 1 (axis) and argument 2 (direction + 1) = arg1 | (arg2 << 4)
 - bytes 2 to 7 = data
 - for the loop byte 2 is the number of commands to loop, byte 3 is the number of loops to complete
-- for the delay byte 2 and 3 are the 16bit delay in ms
+- for the delay byte 2 and 3 are the 16bit delay in ms (command[2] << 8) | command[3] (max 4096)
 */
 
 // defines for different effect functions

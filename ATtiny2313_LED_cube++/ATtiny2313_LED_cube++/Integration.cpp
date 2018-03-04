@@ -178,7 +178,7 @@ void display_main(){
 		parse(command);
 		
 		if(!delay_counter){
-			if(current_command == eeprom_count){
+			if(current_command == (eeprom_count-1)){
 				current_command = 0;
 			}
 			else{

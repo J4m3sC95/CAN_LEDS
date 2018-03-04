@@ -68,6 +68,7 @@ void CAN_tx(canmsg input, uint8_t buffer_number);
 void CAN_rx(canmsg output, uint8_t buffer_number);
 void CAN_setup();
 void led_cube(uint8_t instruction, uint16_t arg1, uint8_t arg2, uint16_t *buffer);
+void led_cube_test();
 
 
 /*
@@ -90,5 +91,21 @@ CAN led cube controls:
 #define DEACTIVATE        8
 #define LOOP          9
 #define DELAY         10
+
+// Stuff from the Arduino sketch
+
+// Definitions for setting the led cube config
+#define WRITE_TIME 100
+
+#define eeprom_write(n) led_cube(n, 0, 0, blank_buffer);delay(WRITE_TIME)
+#define load_buffer(x) led_cube(LOAD, 0, 0, x); delay(WRITE_TIME)
+#define cube_delay(x) led_cube(DELAY, (x & 0xFF00) >> 8, x & 0xFF, blank_buffer); delay(WRITE_TIME)
+#define cube_rotate(ax, dir) led_cube(ROTATE, ax, dir, blank_buffer); delay(WRITE_TIME)
+#define cube_loop(inst, cnt) led_cube(LOOP, inst, cnt, blank_buffer);delay(WRITE_TIME)
+#define cube_mirror(plane) led_cube(MIRROR, plane, 0, blank_buffer);delay(WRITE_TIME)
+#define clear_tanslate() led_cube(TRANSLATE_CLEAR, 0, 0, blank_buffer);delay(WRITE_TIME)
+#define cube_translate(ax, dir, buf) led_cube(TRANSLATE, ax, dir, buf);delay(WRITE_TIME)
+#define cube_activate() led_cube(ACTIVATE, 0, 0, blank_buffer);delay(WRITE_TIME)
+#define cube_deactivate() led_cube(DEACTIVATE, 0, 0, blank_buffer);delay(WRITE_TIME)
 
 #endif /* CAN_H_ */

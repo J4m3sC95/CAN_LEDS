@@ -5,12 +5,12 @@
  *  Author: James
  */ 
 
-#include "clock.h"
+#include "system.h"
 
 // Peripherals
 static volatile PortGroup *porta = (PortGroup *)PORT;
 
-void clockSetup(){
+void systemSetup(){
 	//setup external 8MHz clock from ATmega32u4 (mEDBG)
 	porta->PINCFG[CLK_IN_PIN].bit.PMUXEN=1;
 	porta->PINCFG[CLK_IN_PIN].bit.INEN=1;
@@ -25,6 +25,19 @@ void clockSetup(){
 	// setup generic clock0 for the sercoms 0 & 1
 	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_ID_SERCOM0_CORE;
 	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_ID_SERCOM1_CORE;
+	
+	//setup interrupt for button to reset (EXTINT[5])
+	PORTA->PINCFG[BUTTON_PIN].bit.INEN = 1;
+	PORTA->PINCFG[BUTTON_PIN].bit.PMUXEN = 1;
+	PORTA->PMUX[BUTTON_PIN/2].bit.PMUXO=PORT_PMUX_PMUXO_A_Val;
+	// enable generic clock for EIC
+	GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_ID_EIC;
+	// write config registers
+	EIC->INTENSET.bit.EXTINT5=1;
+	EIC->CONFIG[0].reg = EIC_CONFIG_FILTEN5 | EIC_CONFIG_SENSE5_FALL;
+	// enable EIC
+	EIC->CTRL.bit.ENABLE = 1;
+	NVIC_EnableIRQ(EIC_IRQn);
 }
 
 void watchdogSetup(){
@@ -38,4 +51,11 @@ void watchdogSetup(){
 
 void watchdogClear(){
 	WDT->CLEAR.bit.CLEAR = 0xA5;
+}
+
+void EIC_Handler(){
+	uint32_t n = 0;
+	n |= (0x05FA << SCB_AIRCR_VECTKEY_Pos);
+	n |= (1 << SCB_AIRCR_SYSRESETREQ_Pos);
+	SCB->AIRCR = n;
 }
