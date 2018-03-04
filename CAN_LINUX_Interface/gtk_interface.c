@@ -269,7 +269,7 @@ void SerialTestButton_clicked_callback(GtkWidget *widget, gpointer window){
 		 {
 			 gtk_label_set_text(GTK_LABEL(arg1Label),"Time [ms]");
 			 gtk_label_set_text(GTK_LABEL(arg2Label),"");
-			 Arg1Control = gtk_spin_button_new_with_range(0,255,1);
+			 Arg1Control = gtk_spin_button_new_with_range(0,4095,1);
 			 Arg2Control = gtk_label_new("");
 		 }
 		 break;
@@ -358,7 +358,9 @@ void SendButton_clicked_callback(GtkWidget *widget, gpointer window){
 		 }
 		 case (DELAY_CMD - 4):
 		 {
-			 arg1 = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg1Control));
+			 n = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(Arg1Control));
+			 arg1 = (n&0xFF00) >> 8;
+			 arg2 = n & 0xFF;
 			 command_index += 4;
 		 }
 		 break;
