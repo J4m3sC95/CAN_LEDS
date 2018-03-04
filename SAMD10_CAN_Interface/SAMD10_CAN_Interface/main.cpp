@@ -29,10 +29,4 @@ int main(void)
 	}
 }
 
-/* next steps
-- Thoroughly test the data transmission to the cube - it appears to mostly work, bit iffy though
-- use interrupt pin on MCP2515
-- function/more flexibility for MCP2515 config/use (eg. setup different buffers for different addresses?)
-*/
-
 
